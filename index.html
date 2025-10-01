@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Cleaning Shift Assignment</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 550px; margin: 2em auto; }
+    .hidden { display: none; }
+    .shifts { margin-top: 2em; }
+    table { width: 100%; border-collapse: collapse; margin: 1em 0;}
+    th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <div id="login-section">
+    <h1>Login turni pulizie</h1>
+    <label>Username: <input type="text" id="username"></label><br>
+    <label>Password: <input type="password" id="password"></label><br>
+    <button onclick="handleLogin()">Login</button>
+    <div id="login-error" class="error hidden">Username o password errati!</div>
+  </div>
+
+  <div id="shifts-section" class="hidden">
+    <h2>Turni di questa settimana</h2>
+    <table id="current-shifts"></table>
+    <h2>Turni della settimana precedente</h2>
+    <table id="previous-shifts"></table>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    const VALID_USERNAME = "GGE";
+    const PASSWORD_HASH = "8ae99689531ec58c39142f634ce7b4dd9466d8a9a399cbcfa13f6f50e2272876";
+
+    const persons = ["Genni", "Giuspi", "Eld"];
+    const shifts = ["Main Room", "Kitchen", "Bathroom"];
+
+    function getWeekNumber(d) {
+      d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+      const weekNo = Math.floor(((d - yearStart) / 86400000 + 1) / 7);
+      return weekNo;
+    }
+
+    function calculateAssignments(offset) {
+      const week = getWeekNumber(new Date()) + offset;
+      const result = [];
+      for(let i=0; i<persons.length; i++) {
+        result.push([persons[i], shifts[(i + week)%3]]);
+      }
+      return result;
+    }
+
+    function renderTable(tableId, data) {
+      let html = "<tr><th>Nome</th><th>Turno</th></tr>";
+      for(const [name, shift] of data) {
+        html += `<tr><td>${name}</td><td>${shift}</td></tr>`;
+      }
+      document.getElementById(tableId).innerHTML = html;
+    }
+
+    async function sha256(str) {
+      const utf8 = new TextEncoder().encode(str);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+      return Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,"0")).join('');
+    }
+
+    async function handleLogin() {
+      const u = document.getElementById("username").value;
+      const p = document.getElementById("password").value;
+      const hash = await sha256(p);
+      if(u === VALID_USERNAME && hash === PASSWORD_HASH) {
+        document.getElementById("login-section").classList.add("hidden");
+        document.getElementById("shifts-section").classList.remove("hidden");
+        renderTable("current-shifts", calculateAssignments(0));
+        renderTable("previous-shifts", calculateAssignments(-1));
+        document.getElementById("login-error").classList.add("hidden");
+      } else {
+        document.getElementById("login-error").classList.remove("hidden");
+      }
+    }
+
+    function logout() {
+      document.getElementById("login-section").classList.remove("hidden");
+      document.getElementById("shifts-section").classList.add("hidden");
+      document.getElementById("username").value = "";
+      document.getElementById("password").value = "";
+    }
+    </script>
+</body>
+</html>
