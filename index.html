@@ -79,6 +79,9 @@
       min-height: 1.3em;
       font-size: 1em;
     }
+    .hidden {
+        display: none;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -97,12 +100,31 @@
     th {
       background: #e7f0fa;
     }
-    /* Scroll tables on mobile */
+    /* Contenitori di tabella adattivi senza padding che limita larghezza */
     #current-shifts, #previous-shifts {
       display: block;
       overflow-x: auto;
       width: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
+
+    /* La tabella deve occupare il 100% della larghezza disponibile */
+    table {
+      width: 100% !important;
+      border-collapse: collapse;
+      box-sizing: border-box;
+    }
+
+    /* Rimuove margini/padding esterni al contenitore tabella */
+    #shifts-section > div {
+    padding: 0;
+    margin: 0 0 1.2em 0;
+    width: 100%;
+    box-sizing: border-box;
+    }
+
     @media (max-width: 600px) {
       body {
         padding: 0.4em 0.1em;
@@ -131,8 +153,8 @@
   </style>
 </head>
 <body>
-  <h1>Cleaning Shifts Login</h1>
   <div id="login-section">
+    <h1>Login Turni Pulizie</h1>
     <label>Username:
       <input type="text" id="username" autocomplete="username">
     </label>
@@ -156,13 +178,12 @@
     const PASSWORD_HASH = "8ae99689531ec58c39142f634ce7b4dd9466d8a9a399cbcfa13f6f50e2272876";
 
     const persons = ["Genni", "Giuspi", "Eld"];
-    const shifts = ["Main Room", "Kitchen", "Bathroom"];
+    const shifts = ["Salotto + Bagno piccolo", "Cucina + Corridoio", "Bagno grande"];
 
     function getWeekNumber(d) {
       d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
       const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-      const weekNo = Math.floor(((d - yearStart) / 86400000 + 1) / 7);
-      return weekNo;
+      return Math.floor(((d - yearStart) / 86400000 + 1) / 7);
     }
 
     function calculateAssignments(offset) {
@@ -209,6 +230,7 @@
       document.getElementById("username").value = "";
       document.getElementById("password").value = "";
     }
-    </script>
+  </script>
+  
 </body>
 </html>
